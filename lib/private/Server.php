@@ -1,56 +1,56 @@
 <?php
 /**
- * @copyright Copyright (c) 2016, ownCloud, Inc.
- * @copyright Copyright (c) 2016, Lukas Reschke <lukas@statuscode.ch>
- *
- * @author Arne Hamann <kontakt+github@arne.email>
- * @author Arthur Schiwon <blizzz@arthur-schiwon.de>
- * @author Bart Visscher <bartv@thisnet.nl>
- * @author Bernhard Posselt <dev@bernhard-posselt.com>
- * @author Bernhard Reiter <ockham@raz.or.at>
- * @author Bjoern Schiessle <bjoern@schiessle.org>
- * @author Björn Schießle <bjoern@schiessle.org>
- * @author Christopher Schäpers <kondou@ts.unde.re>
- * @author Christoph Wurst <christoph@winzerhof-wurst.at>
- * @author Damjan Georgievski <gdamjan@gmail.com>
- * @author Daniel Kesselberg <mail@danielkesselberg.de>
- * @author Georg Ehrke <oc.list@georgehrke.com>
- * @author Joas Schilling <coding@schilljs.com>
- * @author John Molakvoæ (skjnldsv) <skjnldsv@protonmail.com>
- * @author Jörn Friedrich Dreyer <jfd@butonic.de>
- * @author Julius Haertl <jus@bitgrid.net>
- * @author Julius Härtl <jus@bitgrid.net>
- * @author Lionel Elie Mamane <lionel@mamane.lu>
- * @author Lukas Reschke <lukas@statuscode.ch>
- * @author Maxence Lange <maxence@artificial-owl.com>
- * @author Michael Weimann <mail@michael-weimann.eu>
- * @author Morris Jobke <hey@morrisjobke.de>
- * @author Piotr Mrówczyński <mrow4a@yahoo.com>
- * @author Robin Appelman <robin@icewind.nl>
- * @author Robin McCorkell <robin@mccorkell.me.uk>
- * @author Roeland Jago Douma <roeland@famdouma.nl>
- * @author root <root@localhost.localdomain>
- * @author Thomas Müller <thomas.mueller@tmit.eu>
- * @author Thomas Tanghus <thomas@tanghus.net>
- * @author Tobia De Koninck <tobia@ledfan.be>
- * @author Vincent Petry <pvince81@owncloud.com>
- * @author Xheni Myrtaj <myrtajxheni@gmail.com>
- *
- * @license AGPL-3.0
- *
- * This code is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License, version 3,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License, version 3,
- * along with this program. If not, see <http://www.gnu.org/licenses/>
- *
- */
+* @copyright Copyright (c) 2016, ownCloud, Inc.
+* @copyright Copyright (c) 2016, Lukas Reschke <lukas@statuscode.ch>
+*
+* @author Arne Hamann <kontakt+github@arne.email>
+* @author Arthur Schiwon <blizzz@arthur-schiwon.de>
+* @author Bart Visscher <bartv@thisnet.nl>
+* @author Bernhard Posselt <dev@bernhard-posselt.com>
+* @author Bernhard Reiter <ockham@raz.or.at>
+* @author Bjoern Schiessle <bjoern@schiessle.org>
+* @author Björn Schießle <bjoern@schiessle.org>
+* @author Christopher Schäpers <kondou@ts.unde.re>
+* @author Christoph Wurst <christoph@winzerhof-wurst.at>
+* @author Damjan Georgievski <gdamjan@gmail.com>
+* @author Daniel Kesselberg <mail@danielkesselberg.de>
+* @author Georg Ehrke <oc.list@georgehrke.com>
+* @author Joas Schilling <coding@schilljs.com>
+* @author John Molakvoæ (skjnldsv) <skjnldsv@protonmail.com>
+* @author Jörn Friedrich Dreyer <jfd@butonic.de>
+* @author Julius Haertl <jus@bitgrid.net>
+* @author Julius Härtl <jus@bitgrid.net>
+* @author Lionel Elie Mamane <lionel@mamane.lu>
+* @author Lukas Reschke <lukas@statuscode.ch>
+* @author Maxence Lange <maxence@artificial-owl.com>
+* @author Michael Weimann <mail@michael-weimann.eu>
+* @author Morris Jobke <hey@morrisjobke.de>
+* @author Piotr Mrówczyński <mrow4a@yahoo.com>
+* @author Robin Appelman <robin@icewind.nl>
+* @author Robin McCorkell <robin@mccorkell.me.uk>
+* @author Roeland Jago Douma <roeland@famdouma.nl>
+* @author root <root@localhost.localdomain>
+* @author Thomas Müller <thomas.mueller@tmit.eu>
+* @author Thomas Tanghus <thomas@tanghus.net>
+* @author Tobia De Koninck <tobia@ledfan.be>
+* @author Vincent Petry <pvince81@owncloud.com>
+* @author Xheni Myrtaj <myrtajxheni@gmail.com>
+*
+* @license AGPL-3.0
+*
+* This code is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License, version 3,
+* as published by the Free Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License, version 3,
+* along with this program. If not, see <http://www.gnu.org/licenses/>
+*
+*/
 
 namespace OC;
 
@@ -178,6 +178,7 @@ use OCP\IAppConfig;
 use OCP\IAvatarManager;
 use OCP\ICache;
 use OCP\ICacheFactory;
+use OCP\ICertificateManager;
 use OCP\IDateTimeFormatter;
 use OCP\IDateTimeZone;
 use OCP\IDBConnection;
@@ -823,23 +824,8 @@ class Server extends ServerContainer implements IServerContainer {
 		/** @deprecated 19.0.0 */
 		$this->registerDeprecatedAlias('DatabaseConnection', IDBConnection::class);
 
-
-		$this->registerService(IClientService::class, function (ContainerInterface $c) {
-			$user = \OC_User::getUser();
-			$uid = $user ? $user : null;
-			return new ClientService(
-				$c->get(\OCP\IConfig::class),
-				$c->get(ILogger::class),
-				new \OC\Security\CertificateManager(
-					$uid,
-					new View(),
-					$c->get(\OCP\IConfig::class),
-					$c->get(ILogger::class),
-					$c->get(ISecureRandom::class)
-				)
-			);
-		});
-		/** @deprecated 19.0.0 */
+		$this->registerAlias(ICertificateManager::class, CertificateManager::class);
+		$this->registerAlias(IClientService::class, ClientService::class);
 		$this->registerDeprecatedAlias('HttpClientService', IClientService::class);
 		$this->registerService(IEventLogger::class, function (ContainerInterface $c) {
 			$eventLogger = new EventLogger();
@@ -1840,28 +1826,12 @@ class Server extends ServerContainer implements IServerContainer {
 	}
 
 	/**
-	 * Get the certificate manager for the user
+	 * Get the certificate manager
 	 *
-	 * @param string $userId (optional) if not specified the current loggedin user is used, use null to get the system certificate manager
-	 * @return \OCP\ICertificateManager | null if $uid is null and no user is logged in
-	 * @deprecated 20.0.0
+	 * @return \OCP\ICertificateManager
 	 */
-	public function getCertificateManager($userId = '') {
-		if ($userId === '') {
-			$userSession = $this->get(IUserSession::class);
-			$user = $userSession->getUser();
-			if (is_null($user)) {
-				return null;
-			}
-			$userId = $user->getUID();
-		}
-		return new CertificateManager(
-			$userId,
-			new View(),
-			$this->get(\OCP\IConfig::class),
-			$this->get(ILogger::class),
-			$this->get(ISecureRandom::class)
-		);
+	public function getCertificateManager() {
+		return $this->get(ICertificateManager::class);
 	}
 
 	/**
