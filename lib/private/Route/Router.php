@@ -427,7 +427,7 @@ class Router implements IRouter {
 	 */
 	private function setupRoutes($routes, $appName) {
 		if (is_array($routes)) {
-			$routeParser = new RouteParser($appName);
+			$routeParser = new RouteParser();
 
 			$defaultRoutes = $routeParser->parseDefaultRoutes($routes, $appName);
 			$ocsRoutes = $routeParser->parseOCSRoutes($routes, $appName);
