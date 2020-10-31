@@ -37,16 +37,10 @@ use OCP\Route\IRouter;
 use Symfony\Component\Routing\RouteCollection;
 
 class RouteParser {
-	/** @var array */
-	private $routes;
-
-	/** @var string */
-	private $appName;
-
 	/** @var string[] */
 	private $controllerNameCache = [];
 
-	protected $rootUrlApps = [
+	private const rootUrlApps = [
 		'cloud_federation_api',
 		'core',
 		'files_sharing',
@@ -55,29 +49,25 @@ class RouteParser {
 		'spreed',
 	];
 
-	public function __construct(string $appName) {
-		$this->appName = $appName;
-	}
-
 	public function parseDefaultRoutes(array $routes, string $appName): RouteCollection {
-		$collection = $this->processIndexRoutes($routes);
-		$collection->addCollection($this->processIndexResources($routes));
+		$collection = $this->processIndexRoutes($routes, $appName);
+		$collection->addCollection($this->processIndexResources($routes, $appName));
 
 		return $collection;
 	}
 
 	public function parseOCSRoutes(array $routes, string $appName): RouteCollection {
-		$collection = $this->processOCS($routes);
-		$collection->addCollection($this->processOCSResources($routes));
+		$collection = $this->processOCS($routes, $appName);
+		$collection->addCollection($this->processOCSResources($routes, $appName));
 
 		return $collection;
 	}
 
-	private function processOCS(array $routes): RouteCollection {
+	private function processOCS(array $routes, string $appName): RouteCollection {
 		$collection = new RouteCollection();
 		$ocsRoutes = $routes['ocs'] ?? [];
 		foreach ($ocsRoutes as $ocsRoute) {
-			$result = $this->processRoute($ocsRoute, 'ocs.');
+			$result = $this->processRoute($ocsRoute, $appName, 'ocs.');
 
 			$collection->add($result[0], $result[1]);
 		}
@@ -90,11 +80,11 @@ class RouteParser {
 	 * @param array $routes
 	 * @throws \UnexpectedValueException
 	 */
-	private function processIndexRoutes(array $routes): RouteCollection {
+	private function processIndexRoutes(array $routes, string $appName): RouteCollection {
 		$collection = new RouteCollection();
 		$simpleRoutes = $routes['routes'] ?? [];
 		foreach ($simpleRoutes as $simpleRoute) {
-			$result = $this->processRoute($simpleRoute);
+			$result = $this->processRoute($simpleRoute, $appName);
 
 			$collection->add($result[0], $result[1]);
 		}
@@ -102,10 +92,10 @@ class RouteParser {
 		return $collection;
 	}
 
-	protected function processRoute(array $route, string $routeNamePrefix = ''): array {
+	private function processRoute(array $route, string $appName, string $routeNamePrefix = ''): array {
 		$name = $route['name'];
 		$postfix = $route['postfix'] ?? '';
-		$root = $this->buildRootPrefix($route, $routeNamePrefix);
+		$root = $this->buildRootPrefix($route, $appName, $routeNamePrefix);
 
 		$url = $root . '/' . ltrim($route['url'], '/');
 		$verb = strtoupper($route['verb'] ?? 'GET');
@@ -119,7 +109,7 @@ class RouteParser {
 		$controllerName = $this->buildControllerName($controller);
 		$actionName = $this->buildActionName($action);
 
-		$routeName = $routeNamePrefix . $this->appName . '.' . $controller . '.' . $action . $postfix;
+		$routeName = $routeNamePrefix . $appName . '.' . $controller . '.' . $action . $postfix;
 
 		$routeObject = new Route($url);
 		$routeObject->method($verb);
@@ -137,7 +127,7 @@ class RouteParser {
 			$defaults = $route['defaults'];
 		}
 
-		$defaults['caller'] = [$this->appName, $controllerName, $actionName];
+		$defaults['caller'] = [$appName, $controllerName, $actionName];
 		$routeObject->defaults($defaults);
 
 		return [$routeName, $routeObject];
@@ -153,8 +143,8 @@ class RouteParser {
 	 *
 	 * @param array $routes
 	 */
-	private function processOCSResources(array $routes): RouteCollection {
-		return $this->processResources($routes['ocs-resources'] ?? [], 'ocs.');
+	private function processOCSResources(array $routes, string $appName): RouteCollection {
+		return $this->processResources($routes['ocs-resources'] ?? [], $appName, 'ocs.');
 	}
 
 	/**
@@ -167,8 +157,8 @@ class RouteParser {
 	 *
 	 * @param array $routes
 	 */
-	private function processIndexResources(array $routes): RouteCollection {
-		return $this->processResources($routes['resources'] ?? []);
+	private function processIndexResources(array $routes, string $appName): RouteCollection {
+		return $this->processResources($routes['resources'] ?? [], $appName);
 	}
 
 	/**
@@ -182,7 +172,7 @@ class RouteParser {
 	 * @param array $resources
 	 * @param string $routeNamePrefix
 	 */
-	protected function processResources(array $resources, string $routeNamePrefix = ''): RouteCollection {
+	private function processResources(array $resources, string $appName, string $routeNamePrefix = ''): RouteCollection {
 		// declaration of all restful actions
 		$actions = [
 			['name' => 'index', 'verb' => 'GET', 'on-collection' => true],
@@ -194,7 +184,7 @@ class RouteParser {
 
 		$collection = new RouteCollection();
 		foreach ($resources as $resource => $config) {
-			$root = $this->buildRootPrefix($config, $routeNamePrefix);
+			$root = $this->buildRootPrefix($config, $appName, $routeNamePrefix);
 
 			// the url parameter used as id to the resource
 			foreach ($actions as $action) {
@@ -215,12 +205,12 @@ class RouteParser {
 				$controllerName = $this->buildControllerName($controller);
 				$actionName = $this->buildActionName($method);
 
-				$routeName = $routeNamePrefix . $this->appName . '.' . strtolower($resource) . '.' . strtolower($method);
+				$routeName = $routeNamePrefix . $appName . '.' . strtolower($resource) . '.' . strtolower($method);
 
 				$route = new Route($url);
 				$route->method($verb);
 
-				$route->defaults(['caller' => [$this->appName, $controllerName, $actionName]]);
+				$route->defaults(['caller' => [$appName, $controllerName, $actionName]]);
 
 				$collection->add($routeName, $route);
 			}
@@ -229,8 +219,8 @@ class RouteParser {
 		return $collection;
 	}
 
-	private function buildRootPrefix(array $route, string $routeNamePrefix): string {
-		$defaultRoot = $this->appName === 'core' ? '' : '/apps/' . $this->appName;
+	private function buildRootPrefix(array $route, string $appName, string $routeNamePrefix): string {
+		$defaultRoot = $appName === 'core' ? '' : '/apps/' . $appName;
 		$root = $route['root'] ?? $defaultRoot;
 
 		if ($routeNamePrefix !== '') {
@@ -238,7 +228,7 @@ class RouteParser {
 			return $root;
 		}
 
-		if (!\in_array($this->appName, $this->rootUrlApps, true)) {
+		if (!\in_array($appName, self::rootUrlApps, true)) {
 			// Only allow root URLS for some apps
 			return  $defaultRoot;
 		}
